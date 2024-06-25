@@ -2,8 +2,10 @@ from flask import Flask, request, jsonify
 import pyodbc
 import threading
 import time
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 # Database connection parameters
 server = '103.239.89.99,21433'
