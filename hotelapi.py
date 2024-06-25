@@ -14,6 +14,7 @@ connection_string = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={server};D
 
 # Global variable to store the count of connected users
 connected_users_count = 0
+count_lock = threading.Lock()
 
 def get_db_connection():
     conn = pyodbc.connect(connection_string)
@@ -42,7 +43,6 @@ def add_guest():
         cursor.execute(query, (guest_name, guest_email, guest_mobile, check_in, check_out, room_no))
         conn.commit()
         cursor.close()
-        conn.close()
         return jsonify({'message': 'Guest added successfully'}), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -50,7 +50,8 @@ def add_guest():
 @app.route('/connected_users', methods=['GET'])
 def get_connected_users():
     global connected_users_count
-    return jsonify({'connected_users': connected_users_count}), 200
+    with count_lock:
+        return jsonify({'connected_users': connected_users_count}), 200
 
 def update_connected_users_count():
     global connected_users_count
@@ -60,7 +61,8 @@ def update_connected_users_count():
             cursor = conn.cursor()
             cursor.execute('SELECT COUNT(*) FROM tbPMS_Guest WHERE isconnected = 1')
             row = cursor.fetchone()
-            connected_users_count = row[0]
+            with count_lock:
+                connected_users_count = row[0]
             cursor.close()
             conn.close()
         except Exception as e:
