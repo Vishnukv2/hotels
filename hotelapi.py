@@ -5,7 +5,7 @@ import time
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app, resources={"/api/*": {"origins": "*"}})
 
 # Database connection parameters
 server = '103.239.89.99,21433'
@@ -22,7 +22,7 @@ def get_db_connection():
     conn = pyodbc.connect(connection_string)
     return conn
 
-@app.route('/add_guests', methods=['POST'])
+@app.route('/api/add_guests', methods=['POST'])
 def add_guest():
     data = request.json
     guest_name = data.get('GuestName')
@@ -49,7 +49,7 @@ def add_guest():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/connected_users', methods=['GET'])
+@app.route('/api/connected_users', methods=['GET'])
 def get_connected_users():
     global connected_users_count
     with count_lock:
@@ -73,7 +73,7 @@ def update_connected_users_count():
 
 
 
-@app.route('/update_checkout', methods=['PUT'])
+@app.route('/api/update_checkout', methods=['PUT'])
 def update_checkout():
     data = request.json
     guest_name = data.get('GuestName')
@@ -99,7 +99,7 @@ def update_checkout():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/update_room', methods=['PUT'])
+@app.route('/api/update_room', methods=['PUT'])
 def update_room():
     data = request.json
     guest_name = data.get('GuestName')
