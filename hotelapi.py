@@ -53,7 +53,7 @@ def add_guest():
 def get_connected_users():
     global connected_users_count
     with count_lock:
-        return jsonify({'connected_users': connected_users_count}), 200
+        return jsonify({'connected users via whatsapp': connected_users_count}), 200
 
 def update_connected_users_count():
     global connected_users_count
