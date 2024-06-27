@@ -14,10 +14,6 @@ username = 'AE_Hospins_usr'
 password = '7LNw37*Qm'
 connection_string = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={server};DATABASE={database};UID={username};PWD={password}'
 
-# Global variable to store the count of connected users
-connected_users_count = 0
-count_lock = threading.Lock()
-
 def get_db_connection():
     conn = pyodbc.connect(connection_string)
     return conn
@@ -51,27 +47,17 @@ def add_guest():
 
 @app.route('/api/connected_users', methods=['GET'])
 def get_connected_users():
-    global connected_users_count
-    with count_lock:
-        return jsonify({'connected users via whatsapp': connected_users_count}), 200
-
-def update_connected_users_count():
-    global connected_users_count
-    while True:
-        try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
-            cursor.execute('SELECT COUNT(*) FROM tbPMS_Guest WHERE isconnected = 1')
-            row = cursor.fetchone()
-            with count_lock:
-                connected_users_count = row[0]
-            cursor.close()
-            conn.close()
-        except Exception as e:
-            print(f"Error updating connected users count: {e}")
-        time.sleep(3)  # Check every 3 seconds
-
-
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT GuestName, RoomNo FROM tbPMS_Guest WHERE isconnected = 1')
+        connected_users = [{'GuestName': row[0], 'RoomNo': row[1]} for row in cursor.fetchall()]
+        total_connected_users = len(connected_users)
+        cursor.close()
+        conn.close()
+        return jsonify({'Total connected users': total_connected_users, 'connected users via whatsapp': connected_users}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/update_checkout', methods=['PUT'])
 def update_checkout():
@@ -126,8 +112,4 @@ def update_room():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    # Start the background thread to update connected users count
-    thread = threading.Thread(target=update_connected_users_count)
-    thread.daemon = True
-    thread.start()
     app.run(debug=False)
