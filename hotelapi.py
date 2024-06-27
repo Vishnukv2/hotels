@@ -132,10 +132,21 @@ def send_welcome_message():
 
         guest_name, room_no, check_in, check_out, guest_mobile = guest
 
+        # Ensure check_in and check_out are datetime.date objects
+        if isinstance(check_in, str):
+            check_in = datetime.strptime(check_in, '%Y-%m-%d').date()
+        if isinstance(check_out, str):
+            check_out = datetime.strptime(check_out, '%Y-%m-%d').date()
+
+        # Format the dates as requested (e.g., "05-Jun-2024")
+        check_in_date = check_in.strftime('%d-%b-%Y')
+        check_out_date = check_out.strftime('%d-%b-%Y')
+
         message = (
-            f"Hello {guest_name}. Welcome to Aloft Palm Jumeirah! I am your personal eButler Bruce. "
-            f"You have checked in to room number {room_no} on {check_in} and scheduled for checkout on {check_out}. "
-            f"Hope you have a wonderful stay!"
+            f"Hello {guest_name}. Welcome to Aloft Palm Jumeirah! I am your personal SmartButler Bruce. "
+            f"I see that you are staying with us at room {room_no} from {check_in_date} to {check_out_date}. "
+            f"Please feel free to connect with me for all services at this hotel, right from room service, to housekeeping, to concierge. "
+            f"I will be at your service 24x7 during your stay with us. Enjoy your stay!"
         )
 
         # Send the message via WhatsApp API
